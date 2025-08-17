@@ -156,7 +156,16 @@ Choose an option below:
     await bot.sendMessage(chatId, welcomeMessage, { reply_markup: keyboard });
   } catch (error) {
     console.error('Error in /start command:', error);
-    await bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again.');
+    const errorMessage = `
+❌ Error occurred while starting the bot
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 });
 
@@ -185,7 +194,17 @@ bot.on('callback_query', async (callbackQuery) => {
     }
   } catch (error) {
     console.error('Error handling callback query:', error);
-    await bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again.');
+    const errorMessage = `
+❌ Error occurred while processing your request
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+🎯 Action: ${data}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 });
 
@@ -244,7 +263,17 @@ const handleMyEvents = async (chatId, telegramUser) => {
     await bot.sendMessage(chatId, message);
   } catch (error) {
     console.error('Error getting user events:', error);
-    await bot.sendMessage(chatId, 'Sorry, couldn\'t load your events. Please try again.');
+    const errorMessage = `
+❌ Error occurred while loading your events
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+🌐 API URL: ${process.env.EVENTAPP_API_URL || 'NOT_SET'}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 };
 
@@ -269,7 +298,17 @@ const handleBrowseEvents = async (chatId, telegramUser) => {
     );
   } catch (error) {
     console.error('Error browsing events:', error);
-    await bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again.');
+    const errorMessage = `
+❌ Error occurred while opening event browser
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+🌐 Mini App URL: ${process.env.MINI_APP_URL || 'NOT_SET'}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 };
 
@@ -304,7 +343,16 @@ const handleSettings = async (chatId, telegramUser) => {
     );
   } catch (error) {
     console.error('Error in settings:', error);
-    await bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again.');
+    const errorMessage = `
+❌ Error occurred while loading settings
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 };
 
@@ -367,10 +415,17 @@ bot.on('message', async (msg) => {
           { reply_markup: keyboard }
         );
       } catch (error) {
-        await bot.sendMessage(chatId, 
-          '❌ Invalid email or password.\n\n' +
-          'Please try again or make sure you have an EventApp account.'
-        );
+        const errorMessage = `
+❌ Failed to link account
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+📧 Email: ${session.email}
+⏰ Time: ${new Date().toISOString()}
+
+Please check your email and password, or make sure you have an EventApp account.
+        `;
+        await bot.sendMessage(chatId, errorMessage);
         
         // Reset to email step
         session.step = 'email';
@@ -380,7 +435,17 @@ bot.on('message', async (msg) => {
     }
   } catch (error) {
     console.error('Error handling message:', error);
-    await bot.sendMessage(chatId, 'Sorry, something went wrong. Please try again.');
+    const errorMessage = `
+❌ Error occurred while processing your message
+
+🔍 Error details: ${error.message}
+📋 Error code: ${error.code || 'UNKNOWN'}
+📝 Message: ${text}
+⏰ Time: ${new Date().toISOString()}
+
+Please try again or contact support if the problem persists.
+    `;
+    await bot.sendMessage(chatId, errorMessage);
   }
 });
 
@@ -414,7 +479,12 @@ app.get('/api/telegram/auth', async (req, res) => {
     }
   } catch (error) {
     console.error('Error in telegram auth:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message,
+      code: error.code || 'UNKNOWN',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
@@ -432,7 +502,11 @@ app.post('/api/telegram/link', async (req, res) => {
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (error) {
     console.error('Error linking account:', error);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ 
+      error: error.message,
+      code: error.code || 'UNKNOWN',
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
